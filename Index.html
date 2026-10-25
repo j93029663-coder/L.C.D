@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cartas Argentinas HDP +18 - Juego Virtual</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+
+        :root {
+            --bg-dark: #070a12;
+            --table-felt: #0f172a;
+            --card-black-bg: #111113;
+            --card-white-bg: #ffffff;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-red: #f43f5e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 60%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        /* --- PANTALLAS CON ACABADO GLASSMORPHISM --- */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 520px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 32px 24px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(139, 92, 246, 0.1);
+            text-align: center;
+            animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 32px;
+            background: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        p.desc {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.25);
+            background: #0f172a;
+        }
+
+        button {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border: none;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35); }
+        .btn-red { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.35); }
+        .btn-gray { background: #334155; box-shadow: none; color: #cbd5e1; }
+
+        /* --- TROLEO +18 --- */
+        .troll-box {
+            display: flex;
+            gap: 12px;
+            position: relative;
+            min-height: 60px;
+            margin-top: 10px;
+        }
+
+        #btn-no {
+            position: absolute;
+            right: 0;
+            width: 48%;
+            transition: all 0.15s cubic-bezier(0.1, 0.7, 0.1, 1);
+        }
+
+        #btn-yes {
+            width: 48%;
+        }
+
+        /* --- REDISEÑO DE CARTAS BASADO EN TUS IMÁGENES --- */
+        .card-perspective {
+            perspective: 1200px;
+            flex-shrink: 0;
+        }
+
+        .card-3d {
+            width: 145px;
+            height: 215px;
+            border-radius: 12px;
+            padding: 16px 14px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            user-select: none;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* CARTA NEGRA */
+        .card-black {
+            background-color: var(--card-black-bg);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* CARTA BLANCA */
+        .card-white {
+            background-color: var(--card-white-bg);
+            color: #000000;
+            border: 2px solid #111113;
+        }
+
+        .card-black .card-text {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 13.5px;
+            line-height: 1.35;
+            text-align: left;
+            color: #ffffff;
+            z-index: 2;
+        }
+
+        .card-white .card-text {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            line-height: 1.35;
+            text-align: left;
+            color: #000000;
+            z-index: 2;
+        }
+
+        /* ESTAMPA DE PALOMA EN LA ESQUINA INFERIOR DERECHA */
+        .pigeon-image-stamp {
+            align-self: flex-end;
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            z-index: 2;
+            pointer-events: none;
+            margin-right: -4px;
+            margin-bottom: -2px;
+        }
+
+        /* MANO EN ABANICO INTERACTIVA */
+        .card-hand {
+            margin-right: -28px;
+            transform: rotate(calc(var(--i, 0) * 3deg)) translateY(0);
+        }
+
+        .card-hand:hover, .card-hand:active {
+            transform: translateY(-30px) rotate(0deg) scale(1.1) !important;
+            z-index: 99 !important;
+            box-shadow: 0 25px 35px rgba(0,0,0,0.8), 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        /* TAPETE DE MESA DE JUEGO */
+        #screen-game {
+            max-width: 950px;
+            padding: 20px;
+            background: rgba(10, 15, 29, 0.95);
+        }
+
+        .voice-bar {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 10px 18px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .voice-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #64748b;
+        }
+
+        .pulse-dot.active {
+            background: var(--accent-green);
+            box-shadow: 0 0 12px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .table-center-felt {
+            background: radial-gradient(ellipse at center, #1e293b 0%, #0f172a 100%);
+            border-radius: 24px;
+            padding: 24px 12px;
+            border: 2px dashed rgba(255, 255, 255, 0.12);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            min-height: 260px;
+            margin-bottom: 16px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.6);
+        }
+
+        .deck-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .deck-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hand-scroll {
+            width: 100%;
+            padding: 10px 0 25px;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .hand-flex {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            min-width: max-content;
+            padding: 25px 40px 10px;
+        }
+
+        .room-row {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .badge-private {
+            background: var(--accent-red);
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 900;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ADVERTENCIA +18 CON TROLEO -->
+    <div id="screen-age" class="screen active">
+        <h1>🔞 ADVERTENCIA +18</h1>
+        <p class="desc">Este juego contiene humor negro argentino descontrolado, situaciones bizarras y lenguaje explícito no apto para sensibles.</p>
+        <h2>¿Tenés 18 años o más?</h2>
+        
+        <div class="troll-box">
+            <button id="btn-yes" class="btn-green" onclick="acceptAge()">SÍ, SOY MAYOR (+18)</button>
+            <button id="btn-no" class="btn-red" onmouseover="trollMove()" onclick="trollClick()">NO, SOY MENOR</button>
+        </div>
+    </div>
+
+    <!-- 2. LOGIN APODO -->
+    <div id="screen-login" class="screen">
+        <h1>Cartas del Humor</h1>
+        <p class="desc">Ingresá tu apodo para sumarte a la mesa virtual:</p>
+        <input type="text" id="username" placeholder="Ej: Matias_22" maxlength="15">
+        <button onclick="goToLobby()">Ingresar al Juego</button>
+    </div>
+
+    <!-- 3. LOBBY Y SALAS MULTIJUGADOR -->
+    <div id="screen-lobby" class="screen">
+        <h2>Salas Virtuales</h2>
+        <button onclick="showScreen('screen-create')">➕ Crear Nueva Sala</button>
+        <button onclick="startVsBot()" class="btn-green">🤖 Jugar Solo vs Robot (IA)</button>
+        
+        <p class="desc" style="text-align: left; margin: 20px 0 8px; color: #f1f5f9; font-weight: 700;">Buscar Sala o Unirse con Código:</p>
+        <input type="text" id="search-code" placeholder="Ingresar código de sala privada..." onkeyup="filterRooms()">
+        
+        <div id="rooms-list">
+            <div class="room-row">
+                <span>Mesa Rancho Quilmes (#4412)</span>
+                <button style="width: auto; padding: 8px 16px;" onclick="joinRoom('4412', false)">Unirse</button>
+            </div>
+            <div class="room-row">
+                <span>Pibes del Boliche <span class="badge-private">PRIVADA</span></span>
+                <button style="width: auto; padding: 8px 16px;" class="btn-gray" onclick="joinRoom('9910', true)">Con Código</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. CREAR SALA -->
+    <div id="screen-create" class="screen">
+        <h2>Configurar Sala</h2>
+        <input type="text" id="room-name-input" placeholder="Nombre de tu mesa">
+        <select id="room-privacy">
+            <option value="public">🌐 Sala Pública (Cualquiera se une)</option>
+            <option value="private">🔒 Sala Privada (Con Código de acceso)</option>
+        </select>
+        <button onclick="submitCreateRoom()" class="btn-green">Crear Mesa</button>
+        <button onclick="showScreen('screen-lobby')" class="btn-gray">Volver</button>
+    </div>
+
+    <!-- 5. MESA VIRTUAL MULTIJUGADOR EN VIVO -->
+    <div id="screen-game" class="screen">
+        <!-- BARRA DE VOZ EN TIEMPO REAL -->
+        <div class="voice-bar">
+            <div class="voice-status">
+                <div class="pulse-dot" id="voice-dot"></div>
+                <span id="voice-text">Micrófono Apagado</span>
+            </div>
+            <button id="btn-mic" style="width: auto; padding: 6px 14px; margin: 0; font-size: 12px;" onclick="toggleVoice()">🎙️ Activar Voz</button>
+        </div>
+
+        <h3 id="round-status-text" style="color: var(--accent-cyan); font-size: 16px; margin-bottom: 4px;">Ronda 1 - Esperando respuestas...</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Jugadores en la mesa: <strong id="players-count" style="color: white;">1</strong>/4</p>
+
+        <!-- TAPETE DE LA MESA CON MAZOS BOCA ABAJO Y CARTAS JUGADAS -->
+        <div class="table-center-felt">
+            <!-- Mazo Negro Boca Abajo -->
+            <div class="deck-wrapper">
+                <div class="deck-title">Mazo Consignas</div>
+                <div class="card-perspective">
+                    <div class="card-3d card-black">
+                        <div class="card-text" style="font-size: 11px; opacity: 0.7;">CARTAS NEGRAS</div>
+                        <img src="image.png" class="pigeon-image-stamp" alt="Paloma">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carta Negra Activa -->
+            <div class="deck-wrapper">
+                <div class="deck-title">Consigna Actual</div>
+                <div class="card-perspective">
+                    <div class="card-3d card-black" id="active-black-card">
+                        <div class="card-text" id="black-card-text">Cargando consigna...</div>
+                        <img src="image.png" class="pigeon-image-stamp" alt="Paloma">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mazo Blanco / Respuestas en Mesa -->
+            <div class="deck-wrapper">
+                <div class="deck-title">Respuestas en Mesa</div>
+                <div class="card-perspective">
+                    <div class="card-3d card-white" id="played-stack-card">
+                        <div class="card-text" id="stack-status-text" style="text-align: center; font-size: 11px;">Lanza tu carta blanca</div>
+                        <img src="image_2.png" class="pigeon-image-stamp" alt="Paloma">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MANO DEL JUGADOR -->
+        <p class="desc" style="text-align: left; margin-bottom: 0; color: #f8fafc; font-weight: 800;">Tus Cartas Blancas (Toca una para lanzarla):</p>
+        <div class="hand-scroll">
+            <div class="hand-flex" id="hand-box">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <button onclick="nextRound()" id="btn-next-round" style="display: none; margin-top: 10px;" class="btn-green">Siguiente Ronda ➔</button>
+    </div>
+
+    <script>
+        // BASE DE DATOS COMPLETA DE TUS PDFS
+        const blackCardsPDF = [
+            "En la cena de Fin de Año, la familia casi se mata por culpa de ___.",
+            "Lo último que vio el remisero antes de despistar en la ruta fue ___.",
+            "Doctor, le juro por mi vieja que el objeto terminó ahí dentro por culpa de ___.",
+            "En el grupo de WhatsApp del consorcio solo se habla de ___.",
+            "Mi mayor trauma de la infancia incluye a mi tío y ___.",
+            "Mi estrategia infalible para no ir a laburar el lunes es ___.",
+            "Según la autopsia preliminar, la causa de la muerte fue ___.",
+            "En el grupo de papis del colegio me borraron por mandar ___.",
+            "Lo que realmente pasó en la despedida de soltero de mi hermano fue ___.",
+            "La verdadera razón por la que nos echaron del tenedor libre fue ___.",
+            "Para mi cumpleaños solo quiero una cosa: ___.",
+            "En mi currículum puse que tengo 5 años de experiencia en ___.",
+            "El ingrediente secreto del guiso de la abuela siempre fue ___.",
+            "Lo peor de quedarse varado en la estación de Retiro a la madrugada es ___.",
+            "¿Qué hay al final del arcoíris en el conurbano? ___.",
+            "La nueva ley que quieren pasar en el Congreso prohíbe estrictamente ___.",
+            "¿Qué es lo primero que piensa un fisura cuando te ve sacar el celular? ___.",
+            "¿Qué no puede faltar en una previa inolvidable? ___.",
+            "La razón por la que terminamos en la guardia de la clínica a las 4 AM fue ___.",
+            "Si la patria está en peligro, nos vamos a salvar gracias a ___.",
+            "El apodo que me quedó después de esa noche fue ___."
+        ];
+
+        const whiteCardsPDF = [
+            "Desconectar a la abuela para enchufar la freidora de aire.",
+            "Un tiro al aire en Año Nuevo que cayó en la pelada del vecino.",
+            "El enano de Boca festejando en pija arriba de un semáforo.",
+            "Mear el cajón del finado porque te debía la plata del asado.",
+            "Terminar en la guardia de urgencias con un foco metido en el orto.",
+            "Morder la pastilla equivocada y terminar abrazado a un contenedor de basura.",
+            "Un fisura en Constitución vendiéndote un iPhone bloqueado por una Manaos.",
+            "Mandarle un CDA (Culo De Abuela) al grupo de papis del colegio.",
+            "Gastarte la jubilación de tu vieja en fichas del casino online.",
+            "El pelotudo de tu primo preguntando quién se queda con el terreno en pleno velatorio.",
+            "Un remisero falopeado escuchando cumbia a todo lo que da a las 6 de la mañana.",
+            "Un perro callejero cruzando la avenida con la tira de asado en la boca.",
+            "Llorar en el colectivo mientras te comés un pancho frío.",
+            "Un chabón en cuero metido en la pileta de lona con una botella de Manaos recortada.",
+            "Caer en cana por pelotudo y terminar haciendo los mandados en el pabellón.",
+            "Salir del boliche a las 7 AM con la cara llena de harina y sin la billetera.",
+            "El olor a pata, chivo y empanada de frito en el colectivo 60 a 40° de calor.",
+            "Hacerte el discapacitado para pasar al frente en la fila del COTO.",
+            "Tropezarte en el velatorio y tirarle el cajón encima a la viuda.",
+            "Tu tío borracho explicando geopolítica mundial con dos escarbadientes.",
+            "Una bicicleta con una pija en lugar de asiento.",
+            "Un consolador gigante de dos puntas para resolver discusiones de pareja.",
+            "Tener ganas de hacer caca justo cuando entrás al mar.",
+            "Un veteado de humedad con forma de la Virgen María.",
+            "Sentarse en un asiento de colectivo que todavía está caliente."
+        ];
+
+        let userNickname = "";
+        let isVoiceActive = false;
+        let isVsBot = false;
+        let currentHand = [];
+        let blackDeck = [];
+        let whiteDeck = [];
+        let playedCardThisRound = false;
+
+        // TROLEO +18
+        function trollMove() {
+            const btnNo = document.getElementById('btn-no');
+            const x = (Math.random() - 0.5) * 220;
+            const y = (Math.random() - 0.5) * 160;
+            btnNo.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function trollClick() {
+            alert("¡A tomar la leche, pibe! Volvé cuando seas mayor.");
+            window.location.href = "https://www.google.com";
+        }
+
+        function acceptAge() {
+            showScreen('screen-login');
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function goToLobby() {
+            const name = document.getElementById('username').value.trim();
+            if(!name) return alert("Ingresá un apodo válido.");
+            userNickname = name;
+            showScreen('screen-lobby');
+        }
+
+        function shuffle(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startVsBot() {
+            isVsBot = true;
+            document.getElementById('players-count').innerText = "2 (Vos vs Robot AI)";
+            setupGame();
+        }
+
+        function submitCreateRoom() {
+            isVsBot = false;
+            document.getElementById('players-count').innerText = "1/4";
+            setupGame();
+        }
+
+        function joinRoom(code, isPrivate) {
+            if(isPrivate && !prompt("Ingresá la clave de acceso:")) return;
+            isVsBot = false;
+            document.getElementById('players-count').innerText = "3/4";
+            setupGame();
+        }
+
+        function setupGame() {
+            blackDeck = shuffle(blackCardsPDF);
+            whiteDeck = shuffle(whiteCardsPDF);
+            currentHand = whiteDeck.splice(0, 5);
+            showScreen('screen-game');
+            renderRound();
+        }
+
+        function renderRound() {
+            playedCardThisRound = false;
+            document.getElementById('btn-next-round').style.display = 'none';
+            document.getElementById('stack-status-text').innerText = "Lanza tu carta blanca";
+
+            document.getElementById('black-card-text').innerText = blackDeck[0];
+
+            const handBox = document.getElementById('hand-box');
+            handBox.innerHTML = '';
+
+            currentHand.forEach((text, i) => {
+                const cardWrap = document.createElement('div');
+                cardWrap.className = 'card-perspective';
+                cardWrap.innerHTML = `
+                    <div class="card-3d card-white card-hand" style="--i: ${i - 2}">
+                        <div class="card-text">${text}</div>
+                        <img src="image_2.png" class="pigeon-image-stamp" alt="Paloma">
+                    </div>
+                `;
+                cardWrap.onclick = () => playWhiteCard(i);
+                handBox.appendChild(cardWrap);
+            });
+        }
+
+        function playWhiteCard(index) {
+            if(playedCardThisRound) return alert("Ya lanzaste tu respuesta en esta ronda.");
+
+            playedCardThisRound = true;
+            const playedText = currentHand.splice(index, 1)[0];
+
+            if(whiteDeck.length > 0) currentHand.push(whiteDeck.shift());
+
+            document.getElementById('stack-status-text').innerText = "Carta enviada boca abajo ✓";
+
+            if(isVsBot) {
+                document.getElementById('round-status-text').innerText = "El Robot está eligiendo...";
+                setTimeout(() => {
+                    const botCard = whiteCardsPDF[Math.floor(Math.random() * whiteCardsPDF.length)];
+                    revealRoundWinner(playedText, botCard);
+                }, 1400);
+            } else {
+                document.getElementById('round-status-text').innerText = "Esperando que los demás lancen...";
+                setTimeout(() => {
+                    revealRoundWinner(playedText, "Un tiro al aire en Año Nuevo que cayó en la pelada del vecino.");
+                }, 2000);
+            }
+        }
+
+        function revealRoundWinner(c1, c2) {
+            document.getElementById('round-status-text').innerText = "¡Cartas reveladas! Ganador de la ronda:";
+            const choices = [c1, c2];
+            const winner = choices[Math.floor(Math.random() * choices.length)];
+
+            document.getElementById('stack-status-text').innerHTML = `<strong style="color: black; font-size: 11px;">GANADORA:</strong><br>"${winner}"`;
+            document.getElementById('btn-next-round').style.display = 'block';
+        }
+
+        function nextRound() {
+            blackDeck.shift();
+            if(blackDeck.length === 0) blackDeck = shuffle(blackCardsPDF);
+            renderRound();
+        }
+
+        // VOZ EN TIEMPO REAL
+        function toggleVoice() {
+            const btn = document.getElementById('btn-mic');
+            const dot = document.getElementById('voice-dot');
+            const text = document.getElementById('voice-text');
+
+            if(!isVoiceActive) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(() => {
+                        isVoiceActive = true;
+                        dot.classList.add('active');
+                        text.innerText = "Transmitiendo Voz";
+                        btn.innerText = "🔇 Silenciar";
+                        btn.classList.add('btn-red');
+                    })
+                    .catch(() => alert("Permiso de micrófono denegado en el navegador."));
+            } else {
+                isVoiceActive = false;
+                dot.classList.remove('active');
+                text.innerText = "Micrófono Apagado";
+                btn.innerText = "🎙️ Activar Voz";
+                btn.classList.remove('btn-red');
+            }
+        }
+    </script>
+</body>
+</html>
